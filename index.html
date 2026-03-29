@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển Tone Bản Nhạc - Ký Tự</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 25px 35px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: #8b0000; margin-bottom: 25px; }
+        .control-group { background: #f8f9fa; padding: 18px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e1e4e8; }
+        .row { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 15px; }
+        .full-width { width: 100%; }
+        label { font-weight: bold; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+        input[type="text"], select, button { padding: 10px 15px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 15px; }
+        input[type="text"] { width: 100%; box-sizing: border-box; font-weight: bold; color: #8b0000; }
+        
+        /* Cụm nút bấm nốt nhạc */
+        .keyboard-panel { background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 8px; margin-top: 10px; }
+        .octave-group { margin-bottom: 10px; }
+        .octave-label { font-size: 13px; color: #666; margin-bottom: 5px; font-weight: bold; }
+        .note-btn { background-color: #e9ecef; color: #333; border: 1px solid #ced4da; margin: 2px; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .note-btn:hover { background-color: #d3d9df; transform: scale(1.05); }
+        .note-btn.sharp { background-color: #343a40; color: white; border-color: #343a40; }
+        .note-btn.sharp:hover { background-color: #23272b; }
+        
+        .action-btn { background-color: #0056b3; color: white; border: none; cursor: pointer; transition: all 0.2s; font-weight: bold; margin-top: 10px; }
+        .action-btn:hover { background-color: #004494; }
+        .btn-clear { background-color: #dc3545; }
+        .btn-clear:hover { background-color: #c82333; }
+
+        /* Khung hiển thị kết quả (Bản gốc & Bản đã chuyển) */
+        .result-box { background: #fff; border: 2px dashed #8b0000; padding: 20px; min-height: 100px; margin-bottom: 25px; border-radius: 8px; position: relative; }
+        .result-title { font-size: 20px; font-weight: bold; color: #8b0000; text-align: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; text-transform: uppercase; }
+        .notes-display { font-family: 'Courier New', monospace; font-size: 18px; line-height: 1.8; color: #000; word-wrap: break-word; text-align: justify; }
+        .meta-info { text-align: right; font-size: 13px; color: #666; font-style: italic; margin-top: 10px; }
+
+        .download-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .download-btn { flex: 1; min-width: 150px; padding: 15px; font-size: 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; transition: background-color 0.3s; }
+        
+        /* Màu cho từng nút */
+        #btn-copy { background-color: #fd7e14; } /* Màu cam */
+        #btn-copy:hover { background-color: #e8590c; }
+        #btn-dl-img { background-color: #28a745; }
+        #btn-dl-img:hover { background-color: #218838; }
+        #btn-dl-txt { background-color: #17a2b8; }
+        #btn-dl-txt:hover { background-color: #138496; }
+        
+        .footer-text { text-align: center; font-size: 12px; color: #888; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Công Cụ Chuyển Tone - Nốt Ký Tự</h1>
+    
+    <h2>1. Soạn Bản Nhạc Gốc</h2>
+    <div class="control-group">
+        <div class="row">
+            <div class="full-width">
+                <label for="songTitle">Tên bài hát / Tác phẩm:</label>
+                <input type="text" id="songTitle" placeholder="Ví dụ: Hành khúc..." value="Bản Nhạc Của Thầy">
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <label for="originalKey">Tone Gốc:</label>
+                <select id="originalKey">
+                    <option value="C">C (Đô trưởng)</option>
+                    <option value="G">G (Son trưởng)</option>
+                    <option value="D">D (Rê trưởng)</option>
+                    <option value="A">A (La trưởng)</option>
+                    <option value="E">E (Mi trưởng)</option>
+                    <option value="F">F (Fa trưởng)</option>
+                    <option value="Bb">Bb (Si giáng trưởng)</option>
+                    <option value="Eb">Eb (Mi giáng trưởng)</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Chọn nốt nhạc (Từ Quãng 3 đến Quãng 5):</label>
+        <div class="keyboard-panel" id="keyboard">
+            </div>
+        
+        <div style="margin-top: 15px;">
+            <button class="action-btn" onclick="addDivider('|')">Thêm Vách Ngăn (|)</button>
+            <button class="action-btn" onclick="addDivider('-')">Dấu Gạch Nối (-)</button>
+            <button class="action-btn btn-clear" onclick="clearNotes()">Xóa Hết</button>
+        </div>
+    </div>
+
+    <div class="result-box" id="original-box">
+        <div class="result-title" id="display-title-orig">BẢN NHẠC CỦA THẦY</div>
+        <div class="notes-display" id="original-notes-text">Chưa có nốt nào...</div>
+        <div class="meta-info">Tone gốc: <span id="display-key-orig">C</span></div>
+    </div>
+
+    <h2>2. Chuyển Tone & Lưu Trữ</h2>
+    <div class="control-group">
+        <div class="row">
+            <label for="targetKey">Chuyển sang Tone:</label>
+            <select id="targetKey">
+                <option value="0">C (Đô trưởng)</option>
+                <option value="1">Db (Rê giáng trưởng)</option>
+                <option value="2">D (Rê trưởng)</option>
+                <option value="3">Eb (Mi giáng trưởng)</option>
+                <option value="4">E (Mi trưởng)</option>
+                <option value="5">F (Fa trưởng)</option>
+                <option value="6">Gb (Son giáng trưởng)</option>
+                <option value="7">G (Son trưởng)</option>
+                <option value="8">Ab (La giáng trưởng)</option>
+                <option value="9">A (La trưởng)</option>
+                <option value="10">Bb (Si giáng trưởng)</option>
+                <option value="11">B (Si trưởng)</option>
+            </select>
+            <button class="action-btn" style="margin-top: 0;" onclick="transposeMusic()">🔄 Thực Hiện Chuyển Tone</button>
+        </div>
+    </div>
+
+    <div class="result-box" id="transposed-box">
+        <div class="result-title" id="display-title-trans">BẢN NHẠC CỦA THẦY</div>
+        <div class="notes-display" id="transposed-notes-text">...</div>
+        <div class="meta-info">Tone mới: <span id="display-key-trans">...</span></div>
+    </div>
+
+    <div class="download-group">
+        <button id="btn-copy" class="download-btn" onclick="copyText()">📋 Copy Bản Nhạc</button>
+        <button id="btn-dl-img" class="download-btn" onclick="downloadImage()">🖼 Tải Ảnh Bản Nhạc</button>
+        <button id="btn-dl-txt" class="download-btn" onclick="downloadText()">📄 Tải File Text (.txt)</button>
+    </div>
+    
+    <div class="footer-text">Thiết kế tối giản - Tự động định dạng khoảng cách và dấu phẩy.</div>
+</div>
+
+<script>
+    const chromaticScale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const keyValues = { "C": 0, "Db": 1, "D": 2, "Eb": 3, "E": 4, "F": 5, "Gb": 6, "G": 7, "Ab": 8, "A": 9, "Bb": 10, "B": 11 };
+    
+    let currentNotesArray = [];
+
+    window.onload = function() {
+        const keyboard = document.getElementById("keyboard");
+        const octaves = [3, 4, 5];
+        const baseNotes = [
+            {n: "C", t: ""}, {n: "C#", t: "sharp"}, {n: "D", t: ""}, {n: "Eb", t: "sharp"}, 
+            {n: "E", t: ""}, {n: "F", t: ""}, {n: "F#", t: "sharp"}, {n: "G", t: ""}, 
+            {n: "G#", t: "sharp"}, {n: "A", t: ""}, {n: "Bb", t: "sharp"}, {n: "B", t: ""}
+        ];
+
+        octaves.forEach(oct => {
+            let div = document.createElement("div");
+            div.className = "octave-group";
+            div.innerHTML = `<div class="octave-label">Quãng ${oct} ${oct===4 ? '(Trung)' : oct===3 ? '(Trầm)' : '(Cao)'}</div>`;
+            
+            baseNotes.forEach(note => {
+                let btn = document.createElement("button");
+                btn.className = `note-btn ${note.t}`;
+                btn.innerText = note.n + oct;
+                btn.onclick = () => addNote(note.n + oct);
+                div.appendChild(btn);
+            });
+            keyboard.appendChild(div);
+        });
+        
+        updateDisplay();
+    };
+
+    function addNote(note) {
+        currentNotesArray.push(note);
+        updateDisplay();
+    }
+
+    function addDivider(char) {
+        currentNotesArray.push(char);
+        updateDisplay();
+    }
+
+    function clearNotes() {
+        currentNotesArray = [];
+        updateDisplay();
+        document.getElementById("transposed-notes-text").innerHTML = "...";
+        document.getElementById("display-key-trans").innerText = "...";
+    }
+
+    function updateDisplay() {
+        let title = document.getElementById("songTitle").value || "Bản Nhạc Của Thầy";
+        let origKey = document.getElementById("originalKey").options[document.getElementById("originalKey").selectedIndex].text;
+        
+        document.getElementById("display-title-orig").innerText = title;
+        document.getElementById("display-title-trans").innerText = title;
+        document.getElementById("display-key-orig").innerText = origKey;
+        
+        let formattedText = "";
+        for (let i = 0; i < currentNotesArray.length; i++) {
+            let item = currentNotesArray[i];
+            if (item === "|" || item === "-") {
+                formattedText += ` ${item} `;
+            } else {
+                if (i > 0 && currentNotesArray[i-1] !== "|" && currentNotesArray[i-1] !== "-") {
+                    formattedText += ", " + item;
+                } else {
+                    formattedText += item;
+                }
+            }
+        }
+        
+        document.getElementById("original-notes-text").innerText = formattedText || "Chưa có nốt nào...";
+    }
+
+    function transposeMusic() {
+        if(currentNotesArray.length === 0) {
+            alert("Vui lòng nhập nốt nhạc ở phần 1 trước!");
+            return;
+        }
+
+        const originalKey = document.getElementById("originalKey").value;
+        const targetValue = parseInt(document.getElementById("targetKey").value);
+        const targetText = document.getElementById("targetKey").options[document.getElementById("targetKey").selectedIndex].text;
+        const originalValue = keyValues[originalKey];
+        
+        let transposeSteps = targetValue - originalValue;
+        
+        const flatToSharp = {"Db":"C#", "Eb":"D#", "Gb":"F#", "Ab":"G#", "Bb":"A#"};
+        const sharpToFlat = {"C#":"Db", "D#":"Eb", "F#":"Gb", "G#":"Ab", "A#":"Bb"};
+        const flatKeys = [5, 10, 3, 8, 1, 6]; 
+
+        let transposedArray = currentNotesArray.map(item => {
+            if (item === "|" || item === "-") return item;
+            
+            let match = item.match(/^([A-G][#b]?)(\d)$/);
+            if(!match) return item;
+            
+            let note = match[1];
+            let oct = parseInt(match[2]);
+            
+            let normalizedNote = flatToSharp[note] || note;
+            let index = chromaticScale.indexOf(normalizedNote);
+            
+            let absolutePitch = oct * 12 + index + transposeSteps;
+            
+            let newOct = Math.floor(absolutePitch / 12);
+            let newIndex = absolutePitch % 12;
+            if (newIndex < 0) { newIndex += 12; newOct -= 1; }
+            
+            let newNote = chromaticScale[newIndex];
+            
+            if (flatKeys.includes(targetValue) && sharpToFlat[newNote]) {
+                newNote = sharpToFlat[newNote];
+            }
+            
+            return newNote + newOct;
+        });
+
+        let formattedTransposed = "";
+        for (let i = 0; i < transposedArray.length; i++) {
+            let item = transposedArray[i];
+            if (item === "|" || item === "-") {
+                formattedTransposed += ` ${item} `;
+            } else {
+                if (i > 0 && transposedArray[i-1] !== "|" && transposedArray[i-1] !== "-") {
+                    formattedTransposed += ", " + item;
+                } else {
+                    formattedTransposed += item;
+                }
+            }
+        }
+
+        document.getElementById("transposed-notes-text").innerText = formattedTransposed;
+        document.getElementById("display-key-trans").innerText = targetText;
+    }
+
+    // --- CHỨC NĂNG COPY BẢN NHẠC ---
+    function copyText() {
+        const textElement = document.getElementById("transposed-notes-text");
+        const notesToCopy = textElement.innerText;
+        
+        if (notesToCopy === "...") {
+            alert("Bạn cần bấm 'Thực Hiện Chuyển Tone' trước khi copy!");
+            return;
+        }
+
+        // Tạo chuỗi hoàn chỉnh để copy (bao gồm cả Tên bài và Tone)
+        let title = document.getElementById("songTitle").value.trim() || "Bản Nhạc Của Thầy";
+        let targetKey = document.getElementById("targetKey").options[document.getElementById("targetKey").selectedIndex].text;
+        
+        let fullTextToCopy = `TÁC PHẨM: ${title}\nTONE: ${targetKey}\n----------------------\n${notesToCopy}`;
+
+        // Sử dụng Clipboard API
+        navigator.clipboard.writeText(fullTextToCopy).then(() => {
+            const btn = document.getElementById("btn-copy");
+            const originalHTML = btn.innerHTML;
+            
+            // Đổi giao diện báo hiệu thành công
+            btn.innerHTML = "✅ Đã Copy!";
+            btn.style.backgroundColor = "#28a745"; // Đổi màu xanh lá
+            
+            // Trả lại như cũ sau 2 giây
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.backgroundColor = ""; // Bỏ can thiệp màu trực tiếp để nhận màu từ CSS
+            }, 2000);
+        }).catch(err => {
+            console.error('Lỗi khi copy:', err);
+            alert("Trình duyệt không hỗ trợ copy tự động. Bạn vui lòng copy thủ công nhé!");
+        });
+    }
+
+    function getSafeFileName(extension) {
+        let rawTitle = document.getElementById("songTitle").value.trim() || "Ban_Nhac";
+        let str = rawTitle.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a").replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e").replace(/ì|í|ị|ỉ|ĩ/g,"i").replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o").replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u").replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y").replace(/đ/g,"d");
+        str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A").replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E").replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I").replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O").replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U").replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y").replace(/Đ/g, "D");
+        return str.replace(/\s+/g, '_').toLowerCase() + "_chuyen_tone" + extension;
+    }
+
+    function downloadImage() {
+        const element = document.getElementById('transposed-box');
+        if (document.getElementById("transposed-notes-text").innerText === "...") {
+            alert("Bạn cần bấm 'Thực Hiện Chuyển Tone' trước khi tải!"); return;
+        }
+
+        const btn = document.getElementById('btn-dl-img');
+        const origText = btn.innerText;
+        btn.innerText = "⏳ Đang tạo ảnh...";
+        
+        domtoimage.toPng(element, { quality: 1, bgcolor: '#ffffff' })
+            .then(function (dataUrl) {
+                let link = document.createElement('a');
+                link.download = getSafeFileName(".png");
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                btn.innerText = origText;
+            })
+            .catch(function (error) {
+                console.error('Lỗi tải ảnh:', error);
+                alert("Lỗi tải ảnh!");
+                btn.innerText = origText;
+            });
+    }
+
+    function downloadText() {
+        if (document.getElementById("transposed-notes-text").innerText === "...") {
+            alert("Bạn cần bấm 'Thực Hiện Chuyển Tone' trước khi tải!"); return;
+        }
+
+        let title = document.getElementById("songTitle").value.trim() || "Bản Nhạc Của Thầy";
+        let targetKey = document.getElementById("targetKey").options[document.getElementById("targetKey").selectedIndex].text;
+        let notes = document.getElementById("transposed-notes-text").innerText;
+
+        let textContent = `TÁC PHẨM: ${title}\n`;
+        textContent += `TONE: ${targetKey}\n`;
+        textContent += `--------------------------------------------------\n`;
+        textContent += `${notes}\n`;
+        textContent += `--------------------------------------------------\n`;
+        
+        let blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+        let url = URL.createObjectURL(blob);
+        let link = document.createElement('a');
+        link.download = getSafeFileName(".txt");
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("songTitle").addEventListener("input", updateDisplay);
+    document.getElementById("originalKey").addEventListener("change", updateDisplay);
+</script>
+
+</body>
+</html>
