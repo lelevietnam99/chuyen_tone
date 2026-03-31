@@ -125,7 +125,7 @@
         }
         textarea:focus { border-color: #3498db; }
         
-        /* === BẢNG CHỌN 21 NỐT (ĐÃ BỎ THANH CUỘN NGANG) === */
+        /* === BẢNG CHỌN 21 NỐT === */
         #note-board-wrapper {
             margin-top: 15px;
             padding-top: 15px;
@@ -138,13 +138,12 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            width: 100%; /* Bao trọn độ rộng thay vì tràn ra ngoài */
+            width: 100%; 
         }
         .note-row {
             display: grid;
-            /* Cột 1: Nhãn 60px, Cột 2-8: 7 Nốt chia đều tỷ lệ */
             grid-template-columns: 60px repeat(7, 1fr);
-            gap: 5px; /* Thu hẹp khoảng cách một chút để nốt được to hơn */
+            gap: 5px; 
             align-items: center;
             width: 100%;
         }
@@ -164,7 +163,7 @@
             transition: all 0.2s;
             user-select: none;
             text-align: center;
-            font-size: 0.9em; /* Chữ nhỏ lại xíu để vừa khung */
+            font-size: 0.9em; 
         }
         .note-cell:hover {
             background: #7bed9f;
@@ -201,7 +200,7 @@
         }
         @media (max-width: 480px) {
             .note-row {
-                grid-template-columns: 45px repeat(7, 1fr); /* Ép khung nhãn nhỏ lại trên mobile */
+                grid-template-columns: 45px repeat(7, 1fr); 
                 gap: 3px;
             }
             .note-row-label { font-size: 0.7em; }
@@ -290,7 +289,8 @@
         const flats  = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
         const flatKeys = ["F", "Bb", "Eb", "Ab", "Db", "Dm", "Gm", "Cm", "Fm", "Bbm"];
 
-        let state = { source: null, target: "G" };
+        // Đã sửa mặc định Tone đích thành C
+        let state = { source: null, target: "C" };
 
         function renderNoteBoard(key) {
             const wrapper = document.getElementById('note-board-wrapper');
