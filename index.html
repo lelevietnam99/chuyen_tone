@@ -20,7 +20,7 @@
 
         .main-container {
             display: flex;
-            flex-direction: column; /* Xếp thông tin và công cụ theo chiều dọc */
+            flex-direction: column; 
             gap: 30px;
             max-width: 1200px;
             width: 100%;
@@ -36,26 +36,9 @@
             width: 100%;
             box-sizing: border-box;
         }
-        .info-image-section h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-            color: #2c3e50;
-        }
-        .info-image-section p {
-            color: #666;
-            margin-bottom: 20px;
-            line-height: 1.6;
-            font-size: 0.95em;
-        }
-        .reference-image {
-            max-width: 600px; /* Giới hạn chiều rộng ảnh */
-            width: 100%;
-            height: auto; /* Giữ tỷ lệ ảnh */
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+        .info-image-section h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.2em; color: #2c3e50; }
+        .info-image-section p { color: #666; margin-bottom: 20px; line-height: 1.6; font-size: 0.95em; }
+        .reference-image { max-width: 600px; width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
         /* === BỐ CỤC CÔNG CỤ CHUYỂN TONE === */
         .transposer-interface {
@@ -105,14 +88,7 @@
         .tone-btn:hover { transform: scale(1.1); z-index: 10; }
         .major-btn { font-size: 0.9em; color: #fff; text-shadow: 1px 1px 1px rgba(0,0,0,0.3); }
         .minor-btn { font-size: 0.8em; color: #333; }
-        
-        /* Hiệu ứng khi được chọn */
-        .tone-btn.selected {
-            transform: scale(1.25);
-            border: 3px solid #2c3e50;
-            box-shadow: 0 0 15px rgba(44, 62, 80, 0.4);
-            z-index: 20;
-        }
+        .tone-btn.selected { transform: scale(1.25); border: 3px solid #2c3e50; box-shadow: 0 0 15px rgba(44, 62, 80, 0.4); z-index: 20; }
 
         /* Khu vực Nhập/Xuất văn bản */
         .text-section {
@@ -129,29 +105,78 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            overflow: hidden; 
         }
         .text-box h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.1em; color: #2c3e50; }
         textarea {
             width: 100%;
-            height: 120px;
+            height: 100px;
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 8px;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: bold;
             resize: vertical;
             box-sizing: border-box;
             outline: none;
             transition: border-color 0.2s;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         textarea:focus { border-color: #3498db; }
         
-        .result-area {
-            position: relative;
+        /* === BẢNG CHỌN 21 NỐT (ĐÃ BỎ THANH CUỘN NGANG) === */
+        #note-board-wrapper {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ddd;
+            display: none; 
+            flex-direction: column;
+            gap: 10px;
         }
-        #output-text { background-color: #f8f9fa; color: #e74c3c; }
+        #note-board-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%; /* Bao trọn độ rộng thay vì tràn ra ngoài */
+        }
+        .note-row {
+            display: grid;
+            /* Cột 1: Nhãn 60px, Cột 2-8: 7 Nốt chia đều tỷ lệ */
+            grid-template-columns: 60px repeat(7, 1fr);
+            gap: 5px; /* Thu hẹp khoảng cách một chút để nốt được to hơn */
+            align-items: center;
+            width: 100%;
+        }
+        .note-row-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        .note-cell {
+            background: #f1f2f6;
+            border: 1px solid #ced6e0;
+            padding: 8px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2f3542;
+            transition: all 0.2s;
+            user-select: none;
+            text-align: center;
+            font-size: 0.9em; /* Chữ nhỏ lại xíu để vừa khung */
+        }
+        .note-cell:hover {
+            background: #7bed9f;
+            border-color: #2ed573;
+            color: #2c3e50;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .note-cell:active { transform: translateY(0); }
+
+        .result-area { position: relative; }
+        #output-text { background-color: #f8f9fa; color: #e74c3c; height: 120px; }
         
         .copy-btn {
             position: absolute;
@@ -168,27 +193,32 @@
             transition: background-color 0.2s;
         }
         .copy-btn:hover { background-color: #27ae60; }
-        .copy-btn:active { transform: translateY(1px); }
 
+        /* Responsive cho điện thoại hoặc màn hình nhỏ */
         @media (max-width: 768px) {
             .transposer-interface { flex-direction: column; align-items: center; }
             .text-section { width: 100%; }
+        }
+        @media (max-width: 480px) {
+            .note-row {
+                grid-template-columns: 45px repeat(7, 1fr); /* Ép khung nhãn nhỏ lại trên mobile */
+                gap: 3px;
+            }
+            .note-row-label { font-size: 0.7em; }
+            .note-cell { font-size: 0.75em; padding: 6px 0; border-radius: 4px; }
         }
     </style>
 </head>
 <body>
 
     <h1>Phần Mềm Chuyển Tone & Tham Khảo Hợp Âm</h1>
-    <p class="subtitle">Click vào Tone Gốc để lấy âm giai mặc định, sau đó tùy chỉnh nốt nhạc theo ý muốn</p>
+    <p class="subtitle">Click vào Tone Gốc để lấy bảng 21 nốt, sau đó click chọn nốt để ghép thành giai điệu</p>
 
     <div class="main-container">
 
         <div class="info-image-section">
             <h3>Vòng Tròn Hợp Âm Tham Khảo</h3>
-            <p>
-                Đây là bản đồ tham khảo giúp bạn hình dung các hợp âm liên quan trong một giọng.
-                Sử dụng nó làm cảm hứng để tạo giai điệu trong ô nhập liệu bên dưới.
-            </p>
+            <p>Sử dụng biểu đồ này làm cảm hứng để tạo giai điệu. Phần mềm bên dưới sẽ hỗ trợ bạn dịch giọng tự động.</p>
             <img src="vongtron_hopam.jpg" alt="Vòng tròn hợp âm tham khảo trực quan" class="reference-image">
         </div>
 
@@ -200,8 +230,14 @@
 
             <div class="text-section">
                 <div class="text-box">
-                    <h3>Nhập nốt nhạc (cách nhau bởi khoảng trắng)</h3>
-                    <textarea id="input-text" placeholder="Click vào Tone gốc bên trái để hiện âm giai tự động..."></textarea>
+                    <h3>Nhập nốt nhạc</h3>
+                    <textarea id="input-text" placeholder="Gõ trực tiếp hoặc dùng bảng nốt bên dưới..."></textarea>
+                    
+                    <div id="note-board-wrapper">
+                        <h4 style="margin: 0; color: #34495e; font-size: 0.95em;">Bảng nốt Tone <strong id="current-tone-label" style="color: #e74c3c;">...</strong> (Click để nhập):</h4>
+                        <div id="note-board-container"></div>
+                    </div>
+
                 </div>
                 
                 <div class="text-box result-area">
@@ -219,9 +255,6 @@
     </div>
 
     <script>
-        // ... (Giữ nguyên toàn bộ phần JavaScript bên dưới, không thay đổi gì) ...
-
-        // Dữ liệu Tone và màu sắc
         const keysData = {
             "C": {val: 0, col: "#FF0000"}, "G": {val: 7, col: "#FF5500"}, "D": {val: 2, col: "#FF9900"},
             "A": {val: 9, col: "#FFCC00"}, "E": {val: 4, col: "#FFFF00"}, "B": {val: 11, col: "#88FF00"},
@@ -234,7 +267,6 @@
             "Cm": {val: 0, col: "#FF99CC"}, "Gm": {val: 7, col: "#FF9999"}, "Dm": {val: 2, col: "#FFB366"}
         };
 
-        // Từ điển Âm giai tự động đổ vào ô text
         const scalesDict = {
             "C": "C D E F G A B", "G": "G A B C D E F#", "D": "D E F# G A B C#",
             "A": "A B C# D E F# G#", "E": "E F# G# A B C# D#", "B": "B C# D# E F# G# A#",
@@ -259,6 +291,49 @@
         const flatKeys = ["F", "Bb", "Eb", "Ab", "Db", "Dm", "Gm", "Cm", "Fm", "Bbm"];
 
         let state = { source: null, target: "G" };
+
+        function renderNoteBoard(key) {
+            const wrapper = document.getElementById('note-board-wrapper');
+            const container = document.getElementById('note-board-container');
+            const label = document.getElementById('current-tone-label');
+            const inputText = document.getElementById('input-text');
+            
+            wrapper.style.display = 'flex';
+            label.textContent = key;
+            container.innerHTML = '';
+
+            const baseNotes = scalesDict[key].split(' ');
+            
+            for (let octave = 3; octave <= 5; octave++) {
+                const row = document.createElement('div');
+                row.className = 'note-row';
+                
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'note-row-label';
+                let octaveName = octave === 3 ? "Thấp (3)" : octave === 4 ? "Trung (4)" : "Cao (5)";
+                rowLabel.textContent = octaveName;
+                row.appendChild(rowLabel);
+
+                baseNotes.forEach(n => {
+                    const btn = document.createElement('div');
+                    btn.className = 'note-cell';
+                    btn.textContent = n + octave;
+                    
+                    btn.onclick = () => {
+                        let currentVal = inputText.value;
+                        if (currentVal.length > 0 && !currentVal.endsWith(' ') && !currentVal.endsWith('\n')) {
+                            inputText.value += ' ';
+                        }
+                        inputText.value += btn.textContent + ' ';
+                        processTranspose();
+                        inputText.focus();
+                    };
+                    
+                    row.appendChild(btn);
+                });
+                container.appendChild(row);
+            }
+        }
 
         function drawWheel(containerId, isSource) {
             const container = document.getElementById(containerId);
@@ -287,7 +362,7 @@
                         
                         if (isSource) {
                             state.source = key;
-                            document.getElementById('input-text').value = scalesDict[key];
+                            renderNoteBoard(key);
                         } else {
                             state.target = key;
                         }
@@ -314,18 +389,28 @@
             const tgtVal = keysData[state.target].val;
             const interval = tgtVal - srcVal;
             const targetNoteSet = flatKeys.includes(state.target) ? flats : sharps;
+            
             const tokens = inputTxt.split(/(\s+)/);
             
             const transposedTokens = tokens.map(token => {
-                const cleanToken = token.toUpperCase();
-                if (noteToVal[cleanToken] !== undefined) {
-                    const noteVal = noteToVal[cleanToken];
-                    const newVal = (noteVal + interval + 12) % 12;
-                    let newNoteStr = targetNoteSet[newVal];
-                    if (token === token.toLowerCase() && token.length > 0) {
-                        return newNoteStr.toLowerCase();
+                const match = token.match(/^([a-zA-Z][#bB]?)(\d*)$/);
+                
+                if (match) {
+                    const notePart = match[1];
+                    const octavePart = match[2];
+                    const cleanNote = notePart.toUpperCase();
+                    
+                    if (noteToVal[cleanNote] !== undefined) {
+                        const noteVal = noteToVal[cleanNote];
+                        const newVal = (noteVal + interval + 12) % 12;
+                        let newNoteStr = targetNoteSet[newVal];
+                        
+                        if (notePart === notePart.toLowerCase()) {
+                            newNoteStr = newNoteStr.toLowerCase();
+                        }
+                        
+                        return newNoteStr + octavePart;
                     }
-                    return newNoteStr;
                 }
                 return token;
             });
