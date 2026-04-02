@@ -289,7 +289,6 @@
         const flats  = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
         const flatKeys = ["F", "Bb", "Eb", "Ab", "Db", "Dm", "Gm", "Cm", "Fm", "Bbm"];
 
-        // Đã sửa mặc định Tone đích thành C
         let state = { source: null, target: "C" };
 
         function renderNoteBoard(key) {
@@ -304,20 +303,26 @@
 
             const baseNotes = scalesDict[key].split(' ');
             
-            for (let octave = 3; octave <= 5; octave++) {
+            // Cấu hình 3 quãng: Thấp (chữ thường), Trung (chữ hoa), Cao (chữ hoa + dấu phẩy)
+            const octaveSettings = [
+                { name: "Thấp", transform: note => note.toLowerCase() },
+                { name: "Trung", transform: note => note },
+                { name: "Cao", transform: note => note + "'" }
+            ];
+            
+            octaveSettings.forEach(setting => {
                 const row = document.createElement('div');
                 row.className = 'note-row';
                 
                 const rowLabel = document.createElement('div');
                 rowLabel.className = 'note-row-label';
-                let octaveName = octave === 3 ? "Thấp (3)" : octave === 4 ? "Trung (4)" : "Cao (5)";
-                rowLabel.textContent = octaveName;
+                rowLabel.textContent = setting.name;
                 row.appendChild(rowLabel);
 
                 baseNotes.forEach(n => {
                     const btn = document.createElement('div');
                     btn.className = 'note-cell';
-                    btn.textContent = n + octave;
+                    btn.textContent = setting.transform(n); // Áp dụng hàm biến đổi
                     
                     btn.onclick = () => {
                         let currentVal = inputText.value;
@@ -332,7 +337,7 @@
                     row.appendChild(btn);
                 });
                 container.appendChild(row);
-            }
+            });
         }
 
         function drawWheel(containerId, isSource) {
@@ -393,11 +398,12 @@
             const tokens = inputTxt.split(/(\s+)/);
             
             const transposedTokens = tokens.map(token => {
-                const match = token.match(/^([a-zA-Z][#bB]?)(\d*)$/);
+                // Regex cập nhật: Bắt nốt nhạc và các ký tự đuôi (dấu ' hoặc số cũ)
+                const match = token.match(/^([a-zA-Z][#bB]?)(['\d]*)$/);
                 
                 if (match) {
                     const notePart = match[1];
-                    const octavePart = match[2];
+                    const octavePart = match[2]; // Bắt dấu nháy đơn ' (nếu có)
                     const cleanNote = notePart.toUpperCase();
                     
                     if (noteToVal[cleanNote] !== undefined) {
@@ -405,10 +411,12 @@
                         const newVal = (noteVal + interval + 12) % 12;
                         let newNoteStr = targetNoteSet[newVal];
                         
+                        // Thông minh giữ lại chữ thường nếu Thầy nhập chữ thường (Quãng thấp)
                         if (notePart === notePart.toLowerCase()) {
                             newNoteStr = newNoteStr.toLowerCase();
                         }
                         
+                        // Trả về nốt mới và ghép lại với dấu ' (Quãng cao)
                         return newNoteStr + octavePart;
                     }
                 }
