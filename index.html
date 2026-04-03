@@ -303,7 +303,6 @@
 
             const baseNotes = scalesDict[key].split(' ');
             
-            // Cấu hình 3 quãng: Thấp (chữ thường), Trung (chữ hoa), Cao (chữ hoa + dấu phẩy)
             const octaveSettings = [
                 { name: "Thấp", transform: note => note.toLowerCase() },
                 { name: "Trung", transform: note => note },
@@ -322,7 +321,7 @@
                 baseNotes.forEach(n => {
                     const btn = document.createElement('div');
                     btn.className = 'note-cell';
-                    btn.textContent = setting.transform(n); // Áp dụng hàm biến đổi
+                    btn.textContent = setting.transform(n); 
                     
                     btn.onclick = () => {
                         let currentVal = inputText.value;
@@ -392,32 +391,58 @@
 
             const srcVal = keysData[state.source].val;
             const tgtVal = keysData[state.target].val;
-            const interval = tgtVal - srcVal;
+            
+            // Tìm khoảng cách ngắn nhất để giữ nốt ở quãng mượt mà nhất (tránh nhảy vọt quãng tám quá xa)
+            let interval = tgtVal - srcVal;
+            if (interval > 6) interval -= 12;
+            if (interval < -6) interval += 12;
+
             const targetNoteSet = flatKeys.includes(state.target) ? flats : sharps;
             
             const tokens = inputTxt.split(/(\s+)/);
             
             const transposedTokens = tokens.map(token => {
-                // Regex cập nhật: Bắt nốt nhạc và các ký tự đuôi (dấu ' hoặc số cũ)
-                const match = token.match(/^([a-zA-Z][#bB]?)(['\d]*)$/);
+                // Nhận diện nốt (A-G kèm thăng giáng) và dấu phẩy (') nếu có
+                const match = token.match(/^([a-zA-Z][#bB]?)([']*)$/);
                 
                 if (match) {
                     const notePart = match[1];
-                    const octavePart = match[2]; // Bắt dấu nháy đơn ' (nếu có)
+                    const apostrophePart = match[2];
                     const cleanNote = notePart.toUpperCase();
                     
                     if (noteToVal[cleanNote] !== undefined) {
-                        const noteVal = noteToVal[cleanNote];
-                        const newVal = (noteVal + interval + 12) % 12;
-                        let newNoteStr = targetNoteSet[newVal];
+                        const baseVal = noteToVal[cleanNote];
                         
-                        // Thông minh giữ lại chữ thường nếu Thầy nhập chữ thường (Quãng thấp)
+                        // Xác định quãng hiện tại: Thấp=3 (chữ thường), Trung=4 (chữ hoa), Cao=5+ (có dấu phẩy)
+                        let octave = 4;
                         if (notePart === notePart.toLowerCase()) {
-                            newNoteStr = newNoteStr.toLowerCase();
+                            octave = 3;
+                        } else if (apostrophePart.length > 0) {
+                            octave = 4 + apostrophePart.length;
                         }
                         
-                        // Trả về nốt mới và ghép lại với dấu ' (Quãng cao)
-                        return newNoteStr + octavePart;
+                        // Tính toán cao độ tuyệt đối (Absolute Pitch)
+                        const absoluteVal = octave * 12 + baseVal;
+                        
+                        // Áp dụng dịch tone
+                        const newAbsoluteVal = absoluteVal + interval;
+                        
+                        // Tính ngược lại ra Quãng (Octave) và Nốt (Note)
+                        const newOctave = Math.floor(newAbsoluteVal / 12);
+                        let newBaseVal = newAbsoluteVal % 12;
+                        if (newBaseVal < 0) newBaseVal += 12; // Khắc phục số âm trong JS
+                        
+                        let newNoteStr = targetNoteSet[newBaseVal];
+                        
+                        // Tái tạo lại định dạng chữ tương ứng với Quãng mới
+                        if (newOctave <= 3) {
+                            return newNoteStr.toLowerCase();
+                        } else if (newOctave === 4) {
+                            return newNoteStr; // Trung bình: Chữ hoa
+                        } else {
+                            // Cao: Thêm dấu phẩy tương ứng
+                            return newNoteStr + "'".repeat(newOctave - 4);
+                        }
                     }
                 }
                 return token;
